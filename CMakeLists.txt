@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   roslib
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -26,7 +27,8 @@ find_package(Eigen3 REQUIRED)
 find_package(SuiteParse REQUIRED) # Apparently needed by g2o
 find_package(X11 REQUIRED)
 find_package(G2O REQUIRED)
-
+find_package(OpenCV REQUIRED HINTS /opt/ros/kinetic/lib/x86_64-linux-gnu/pkgconfig)
+message(STATUS "opencv libs : ${OpenCV_LIBS}")
 # SSE flags
 # rosbuild_check_for_sse()
 add_definitions("-DUSE_ROS")
@@ -74,11 +76,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE_FLAGS} -march=native  -std=c++0x")
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  keyframeGraphMsg.msg
+  keyframeMsg.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -95,10 +97,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE_FLAGS} -march=native  -std=c++0x")
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   sensor_msgs#   std_msgs
-# )
+generate_messages()
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -132,7 +132,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lsd
-#  CATKIN_DEPENDS cv_bridge dynamic_reconfigure libg2o roscpp rospy sensor_msgs std_msgs
+  CATKIN_DEPENDS cv_bridge dynamic_reconfigure libg2o roscpp rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -143,7 +143,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+        include
+  ${PROJECT_SOURCE_DIR}/cfg/cpp
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/src
@@ -184,10 +185,11 @@ set(SOURCES_FILES
 
 ## Declare a C++ library
 add_library(lsdslam SHARED ${SOURCES_FILES})
-set(ThirdLibs ${FABMAP_LIB} g2o_core g2o_stuff 
-              csparse cxsparse g2o_solver_csparse 
-              g2o_csparse_extension g2o_types_sim3 
-              g2o_types_sba X11)
+set(ThirdLibs ${FABMAP_LIB} ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} 
+              csparse cxsparse ${G2O_SOLVER_CSPARSE} 
+              ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_TYPES_SIM3} 
+              ${G2O_TYPES_SBA} X11
+              ${OpenCV_LIBS})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

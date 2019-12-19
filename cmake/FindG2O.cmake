@@ -19,7 +19,7 @@ find_path(G2O_INCLUDE_DIR g2o/core/base_vertex.h
 macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
 
   find_library("${MYLIBRARY}_DEBUG"
-    NAMES "g2o_${MYLIBRARYNAME}_d"
+    NAMES "libg2o_${MYLIBRARYNAME}_d"
     PATHS
     ${G2O_ROOT}/lib/Debug
     ${G2O_ROOT}/lib
@@ -29,7 +29,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     )
 
   find_library("${MYLIBRARY}_DEBUG"
-    NAMES "g2o_${MYLIBRARYNAME}_d"
+    NAMES "libg2o_${MYLIBRARYNAME}_d"
     PATHS
     ~/Library/Frameworks
     /Library/Frameworks
@@ -40,10 +40,11 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    /opt/ros/kinetic/lib
     )
   
   find_library(${MYLIBRARY}
-    NAMES "g2o_${MYLIBRARYNAME}"
+    NAMES "libg2o_${MYLIBRARYNAME}"
     PATHS
     ${G2O_ROOT}/lib/Release
     ${G2O_ROOT}/lib
@@ -53,7 +54,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     )
 
   find_library(${MYLIBRARY}
-    NAMES "g2o_${MYLIBRARYNAME}"
+    NAMES "libg2o_${MYLIBRARYNAME}"
     PATHS
     ~/Library/Frameworks
     /Library/Frameworks
@@ -64,6 +65,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    /opt/ros/kinetic/lib
     )
   
   if(NOT ${MYLIBRARY}_DEBUG)
@@ -72,7 +74,7 @@ macro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     endif(MYLIBRARY)
   endif( NOT ${MYLIBRARY}_DEBUG)
   
-endmacro(FIND_G2O_LIBRARY LIBRARY LIBRARYNAME)
+endmacro(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
 
 # Find the core elements
 FIND_G2O_LIBRARY(G2O_STUFF_LIBRARY stuff)
@@ -99,6 +101,7 @@ FIND_G2O_LIBRARY(G2O_TYPES_SCLAM2D types_sclam2d)
 FIND_G2O_LIBRARY(G2O_TYPES_SIM3 types_sim3)
 FIND_G2O_LIBRARY(G2O_TYPES_SLAM2D types_slam2d)
 FIND_G2O_LIBRARY(G2O_TYPES_SLAM3D types_slam3d)
+
 
 # G2O solvers declared found if we found at least one solver
 set(G2O_SOLVERS_FOUND "NO")

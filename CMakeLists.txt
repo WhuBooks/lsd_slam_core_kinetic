@@ -26,9 +26,13 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(SuiteParse REQUIRED) # Apparently needed by g2o
 find_package(X11 REQUIRED)
+# g2o #######################
 find_package(G2O REQUIRED)
+include_directories(${G2O_INCLUDE_DIRS})
+link_directories(${G2O_LIBRARY_DIRS})
+message("G2o-libraries " ${G2O_LIBRARIES})
 find_package(OpenCV REQUIRED HINTS /opt/ros/kinetic/lib/x86_64-linux-gnu/pkgconfig)
-message(STATUS "opencv libs : ${OpenCV_LIBS}")
+
 # SSE flags
 # rosbuild_check_for_sse()
 add_definitions("-DUSE_ROS")
@@ -40,10 +44,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SSE_FLAGS} -march=native  -std=c++0x")
 
 # FabMap
 # uncomment this part to enable fabmap
-#add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/openFabMap)
-#include_directories(${PROJECT_SOURCE_DIR}/thirdparty/openFabMap/include)
-#add_definitions("-DHAVE_FABMAP")
-#set(FABMAP_LIB openFABMAP )
+# add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/openFabMap)
+# include_directories(${PROJECT_SOURCE_DIR}/thirdparty/openFabMap/include)
+# add_definitions("-DHAVE_FABMAP")
+# set(FABMAP_LIB openFABMAP )
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -132,7 +136,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lsd
-  CATKIN_DEPENDS cv_bridge dynamic_reconfigure libg2o roscpp rospy sensor_msgs std_msgs message_runtime
+  CATKIN_DEPENDS cv_bridge dynamic_reconfigure roscpp rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -143,10 +147,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-        include
-  ${PROJECT_SOURCE_DIR}/cfg/cpp
+  include
   ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
+  "/usr/include/eigen3"
+  ${G2O_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/thirdparty/Sophus
   ${CSPARSE_INCLUDE_DIR} #Has been set by SuiteParse
@@ -184,27 +188,26 @@ set(SOURCES_FILES
 )
 
 ## Declare a C++ library
-add_library(lsdslam SHARED ${SOURCES_FILES})
-set(ThirdLibs ${FABMAP_LIB} ${G2O_CORE_LIBRARY} ${G2O_STUFF_LIBRARY} 
-              csparse cxsparse ${G2O_SOLVER_CSPARSE} 
-              ${G2O_SOLVER_CSPARSE_EXTENSION} ${G2O_TYPES_SIM3} 
-              ${G2O_TYPES_SBA} X11
-              ${OpenCV_LIBS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES_FILES})
+set(ThirdLibs ${FABMAP_LIB} ${G2O_LIBRARIES}
+              csparse cxsparse 
+              X11 ${OpenCV_LIBS})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/lsd_node.cpp)
 add_executable(live_slam src/main_live_odometry.cpp)
-target_link_libraries(live_slam lsdslam ${catkin_LIBRARIES} ${ThirdLibs})
+target_link_libraries(live_slam ${PROJECT_NAME} ${catkin_LIBRARIES} ${ThirdLibs})
 
 add_executable(dataset_slam src/main_on_images.cpp)
-target_link_libraries(dataset_slam lsdslam ${catkin_LIBRARIES} ${ThirdLibs})
+target_link_libraries(dataset_slam ${PROJECT_NAME} ${catkin_LIBRARIES} ${ThirdLibs})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
